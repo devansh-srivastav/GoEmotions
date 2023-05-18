@@ -10,7 +10,8 @@ load_dotenv()
 # AI model code
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-API_URL = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-base-go-emotion"
+API_URL_ED = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-base-go-emotion"
+API_URL_HS = "https://api-inference.huggingface.co/models/IMSyPP/hate_speech_en"
 headers = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 # Set page title
@@ -21,9 +22,9 @@ description = "The GoEmotions Dashboard is a web-based user interface for analyz
 st.markdown(description)
 
 def query(payload):
-    data = json.dumps(payload)
-    response = requests.request("POST", API_URL, headers=headers, data=data)
-    return json.loads(response.content.decode("utf-8"))
+    response_ED = requests.request("POST", API_URL_ED, headers=headers, json=payload)
+    response_HS = requests.request("POST", API_URL_HS, headers=headers, json=payload)
+    return (json.loads(response_ED.content.decode("utf-8")),json.loads(response_HS.content.decode("utf-8")))
 
 # Define color map for each emotion category
 color_map = {
@@ -57,6 +58,9 @@ color_map = {
         'neutral': ['#1f77b4', '#aec7e8', '#ff7f0e', '#d62728']
 }
 
+# Labels for Hate Speech Classification
+label_hs = {"LABEL_0": "Acceptable", "LABEL_1": "inappropriate", "LABEL_2": "Offensive", "LABEL_3": "Violent"}
+
 # Define default options
 default_options = [
     "I'm so excited for my vacation next week!",
@@ -64,6 +68,12 @@ default_options = [
     "I just received great news from my doctor!",
     "I can't wait to see my best friend tomorrow.",
     "I'm feeling so lonely and sad today."
+    "I'm so angry at my neighbor for being so rude.",
+    "You are so annoying!",
+    "You people from small towns are so dumb.",
+    "If you don't agree with me, you are a moron.",
+    "I hate you so much!",
+    "If you don't listen to me, I'll beat you up!",
 ]
 
 
@@ -76,15 +86,17 @@ text_input = st.text_input("Enter text to analyze emotions:", selected_option)
 # Add submit button
 if st.button("Submit"):
 
-    # Call API and get predicted probabilities for each emotion category
-    response = query(text_input)
-    predicted_probabilities = response[0]
+    # Call API and get predicted probabilities for each emotion category and hate speech classification
+    payload = {"inputs": text_input, "use_cache": True, "wait_for_model": True}
+    response_ED, response_HS = query(payload)
+    predicted_probabilities_ED = response_ED[0]
+    predicted_probabilities_HS = response_HS[0]
 
     # Sort the predicted probabilities in descending order
-    sorted_probs = sorted(predicted_probabilities, key=lambda x: x['score'], reverse=True)
+    sorted_probs_ED = sorted(predicted_probabilities_ED, key=lambda x: x['score'], reverse=True)
 
     # Get the top 4 emotion categories and their scores
-    top_emotions = sorted_probs[:4]
+    top_emotions = sorted_probs_ED[:4]
     top_scores = [e['score'] for e in top_emotions]
 
     # Normalize the scores so that they add up to 100%
@@ -126,3 +138,6 @@ if st.button("Submit"):
     # Display gauge charts
     st.plotly_chart(fig, use_container_width=True)
 
+    # Display Hate Speech Classification
+    hate_detection = label_hs[predicted_probabilities_HS[0]['label']]
+    st.text(f"Hate Speech Classification: {hate_detection}")
