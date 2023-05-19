@@ -136,8 +136,27 @@ if st.button("Submit"):
     fig.update_layout(height=400, margin=dict(t=50, b=5, l=0, r=0))
 
     # Display gauge charts
+    st.text("")
+    st.text("")
+    st.text("")
+    st.header("Emotion Detection")
+    st.text("")
     st.plotly_chart(fig, use_container_width=True)
 
     # Display Hate Speech Classification
     hate_detection = label_hs[predicted_probabilities_HS[0]['label']]
-    st.text(f"Hate Speech Classification: {hate_detection}")
+    st.text("")
+    st.text("")
+    st.text("")
+    st.header("Hate Speech Analysis")
+    st.text("")
+    col1, col2 = st.columns(2)
+
+    col1.image(f"assets/{hate_detection}.jpg", width=200)
+    col2.text("")
+    col2.text("")
+    col2.text("")
+    col2.text("")
+    col2.subheader(f"The given text is {hate_detection}")
+
+ 
