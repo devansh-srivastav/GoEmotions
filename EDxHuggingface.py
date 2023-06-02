@@ -14,12 +14,13 @@ API_URL_ED = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-b
 API_URL_HS = "https://api-inference.huggingface.co/models/IMSyPP/hate_speech_en"
 headers = {"Authorization": f"Bearer {HF_API_KEY}"}
 
+st.set_page_config(
+    page_title="GoEmotions Dashboard",
+    layout="wide"
+)
+
 # Set page title
 st.title("GoEmotions Dashboard - Analyzing Emotions in Text")
-
-# Add page description
-description = "The GoEmotions Dashboard is a web-based user interface for analyzing emotions in text. The dashboard is powered by a pre-trained natural language processing model that can detect emotions in text input. Users can input any text and the dashboard will display the detected emotions in a set of gauges, with each gauge representing the intensity of a specific emotion category. The gauge colors are based on a predefined color map for each emotion category. This dashboard is useful for anyone who wants to understand the emotional content of a text, including content creators, marketers, and researchers."
-st.markdown(description)
 
 def query(payload):
     response_ED = requests.request("POST", API_URL_ED, headers=headers, json=payload)
@@ -62,6 +63,16 @@ color_map = {
 label_hs = {"LABEL_0": "Acceptable", "LABEL_1": "inappropriate", "LABEL_2": "Offensive", "LABEL_3": "Violent"}
 
 # Define default options
+
+def format_option(option):
+    # Set the maximum length of the option text you want to display
+    max_length = 200
+    if len(option) > max_length:
+        # Truncate the option text and add ellipsis at the end
+        return option[:max_length] + '...'
+    else:
+        return option
+
 default_options = [
     "I'm so excited for my vacation next week!",
     "I'm feeling so stressed about work.",
@@ -76,15 +87,23 @@ default_options = [
     "If you don't listen to me, I'll beat you up!",
 ]
 
+with st.sidebar:
 
-# Create dropdown with default options
-selected_option = st.selectbox("Select a default option or enter your own text:", default_options)
+    # Add page description
+    description = "The GoEmotions Dashboard is a web-based user interface for analyzing emotions in text. The dashboard is powered by a pre-trained natural language processing model that can detect emotions in text input. Users can input any text and the dashboard will display the detected emotions in a set of gauges, with each gauge representing the intensity of a specific emotion category. The gauge colors are based on a predefined color map for each emotion category. This dashboard is useful for anyone who wants to understand the emotional content of a text, including content creators, marketers, and researchers."
+    #st.markdown(description)
 
-# Display text input with selected option as default value
-text_input = st.text_input("Enter text to analyze emotions:", selected_option)
+    # Create dropdown with default options
+    selected_option = st.selectbox("Select a default option or enter your own text:", default_options, format_func=lambda x: format_option(x))
 
-# Add submit button
-if st.button("Submit"):
+    # Display text input with selected option as default value
+    text_input = st.text_area("Enter text to analyze emotions:", value = selected_option, height=100)
+
+    # Add submit button
+    submit = st.button("Submit")
+
+# If submit button is clicked
+if submit:
 
     # Call API and get predicted probabilities for each emotion category and hate speech classification
     payload = {"inputs": text_input, "use_cache": True, "wait_for_model": True}
@@ -92,71 +111,76 @@ if st.button("Submit"):
     predicted_probabilities_ED = response_ED[0]
     predicted_probabilities_HS = response_HS[0]
 
-    # Sort the predicted probabilities in descending order
-    sorted_probs_ED = sorted(predicted_probabilities_ED, key=lambda x: x['score'], reverse=True)
+    ED, _, HS = st.columns([5,2,3])
 
-    # Get the top 4 emotion categories and their scores
-    top_emotions = sorted_probs_ED[:4]
-    top_scores = [e['score'] for e in top_emotions]
+    with ED:
+        # Sort the predicted probabilities in descending order
+        sorted_probs_ED = sorted(predicted_probabilities_ED, key=lambda x: x['score'], reverse=True)
 
-    # Normalize the scores so that they add up to 100%
-    total = sum(top_scores)
-    normalized_scores = [score/total * 100 for score in top_scores]
+        # Get the top 4 emotion categories and their scores
+        top_emotions = sorted_probs_ED[:4]
+        top_scores = [e['score'] for e in top_emotions]
 
-    # Create the gauge charts for the top 4 emotion categories using the normalized scores
-    fig = make_subplots(rows=2, cols=2, specs=[[{'type': 'indicator'}, {'type': 'indicator'}],
-                                                [{'type': 'indicator'}, {'type': 'indicator'}]],
-                        vertical_spacing=0.4)
+        # Normalize the scores so that they add up to 100%
+        total = sum(top_scores)
+        normalized_scores = [score/total * 100 for score in top_scores]
 
-    for i, emotion in enumerate(top_emotions):
-        category = emotion['label']
-        color = color_map[category]
-        value = normalized_scores[i]
-        row = i // 2 + 1
-        col = i % 2 + 1
-        fig.add_trace(go.Indicator(
-            domain={'x': [0, 1], 'y': [0, 1]},
-            value=value,
-            mode="gauge+number",
-            title={'text': category.capitalize()},
-            gauge={'axis': {'range': [None, 100]},
-                'bar': {'color': color[3]},
-                'bgcolor': 'white',
-                'borderwidth': 2,
-                'bordercolor': color[1],
-                'steps': [{'range': [0, 33], 'color': color[0]},
-                            {'range': [33, 66], 'color': color[1]},
-                            {'range': [66, 100], 'color': color[2]}],
-                'threshold': {'line': {'color': "black", 'width': 4},
-                                'thickness': 0.5,
-                                'value': 50}}), row=row, col=col)
+        # Create the gauge charts for the top 4 emotion categories using the normalized scores
+        fig = make_subplots(rows=2, cols=2, specs=[[{'type': 'indicator'}, {'type': 'indicator'}],
+                                                    [{'type': 'indicator'}, {'type': 'indicator'}]],
+                            vertical_spacing=0.4)
+
+        for i, emotion in enumerate(top_emotions):
+            category = emotion['label']
+            color = color_map[category]
+            value = normalized_scores[i]
+            row = i // 2 + 1
+            col = i % 2 + 1
+            fig.add_trace(go.Indicator(
+                domain={'x': [0, 1], 'y': [0, 1]},
+                value=value,
+                mode="gauge+number",
+                title={'text': category.capitalize()},
+                gauge={'axis': {'range': [None, 100]},
+                    'bar': {'color': color[3]},
+                    'bgcolor': 'white',
+                    'borderwidth': 2,
+                    'bordercolor': color[1],
+                    'steps': [{'range': [0, 33], 'color': color[0]},
+                                {'range': [33, 66], 'color': color[1]},
+                                {'range': [66, 100], 'color': color[2]}],
+                    'threshold': {'line': {'color': "black", 'width': 4},
+                                    'thickness': 0.5,
+                                    'value': 50}}), row=row, col=col)
 
 
-    # Update layout
-    fig.update_layout(height=400, margin=dict(t=50, b=5, l=0, r=0))
+        # Update layout
+        fig.update_layout(height=400, margin=dict(t=50, b=5, l=0, r=0))
 
-    # Display gauge charts
-    st.text("")
-    st.text("")
-    st.text("")
-    st.header("Emotion Detection")
-    st.text("")
-    st.plotly_chart(fig, use_container_width=True)
+        # Display gauge charts
+        st.text("")
+        st.text("")
+        st.text("")
+        st.subheader("Emotion Detection")
+        st.text("")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with _:
+        st.text("")
 
-    # Display Hate Speech Classification
-    hate_detection = label_hs[predicted_probabilities_HS[0]['label']]
-    st.text("")
-    st.text("")
-    st.text("")
-    st.header("Hate Speech Analysis")
-    st.text("")
-    col1, col2 = st.columns(2)
-
-    col1.image(f"assets/{hate_detection}.jpg", width=200)
-    col2.text("")
-    col2.text("")
-    col2.text("")
-    col2.text("")
-    col2.subheader(f"The given text is {hate_detection}")
+    with HS:
+        # Display Hate Speech Classification
+        hate_detection = label_hs[predicted_probabilities_HS[0]['label']]
+        st.text("")
+        st.text("")
+        st.text("")
+        st.subheader("Hate Speech Analysis")
+        st.text("")
+        st.image(f"assets/{hate_detection}.jpg", width=200)
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.markdown(f"#### The given text is {hate_detection}")
 
  
