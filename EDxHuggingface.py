@@ -66,15 +66,6 @@ label_hs = {"LABEL_0": "Acceptable", "LABEL_1": "inappropriate", "LABEL_2": "Off
 
 # Define default options
 
-def format_option(option):
-    # Set the maximum length of the option text you want to display
-    max_length = 200
-    if len(option) > max_length:
-        # Truncate the option text and add ellipsis at the end
-        return option[:max_length] + '...'
-    else:
-        return option
-
 default_options = [
     "I'm so excited for my vacation next week!",
     "I'm feeling so stressed about work.",
@@ -96,7 +87,7 @@ with st.sidebar:
     #st.markdown(description)
 
     # Create dropdown with default options
-    selected_option = st.selectbox("Select a default option or enter your own text:", default_options, format_func=lambda x: format_option(x))
+    selected_option = st.selectbox("Select a default option or enter your own text:", default_options)
 
     # Display text input with selected option as default value
     text_input = st.text_area("Enter text to analyze emotions:", value = selected_option, height=100)
@@ -186,3 +177,12 @@ if submit:
         st.markdown(f"#### The given text is {hate_detection}")
 
  
+
+
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
