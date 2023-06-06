@@ -10,6 +10,7 @@ load_dotenv()
 # AI model code
 HF_API_KEY = os.getenv("HF_API_KEY")
 
+# API_URL_ED = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base" #alternate ED model(slow loading on first run)
 API_URL_ED = "https://api-inference.huggingface.co/models/bhadresh-savani/bert-base-go-emotion"
 API_URL_HS = "https://api-inference.huggingface.co/models/IMSyPP/hate_speech_en"
 headers = {"Authorization": f"Bearer {HF_API_KEY}"}
@@ -107,7 +108,7 @@ with st.sidebar:
 if submit:
 
     # Call API and get predicted probabilities for each emotion category and hate speech classification
-    payload = {"inputs": text_input, "use_cache": True, "wait_for_model": True}
+    payload = {"inputs": text_input, "options": {"wait_for_model": True, "use_cache": True}}
     response_ED, response_HS = query(payload)
     predicted_probabilities_ED = response_ED[0]
     predicted_probabilities_HS = response_HS[0]
