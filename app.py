@@ -109,6 +109,7 @@ if submit:
     predicted_probabilities_HS = response_HS[0]
     predicted_probabilities_SD = response_SD[0]
 
+    # Creating columns to visualize the results 
     ED, _, HS, __, SD = st.columns([4,1,2,1,2])
 
     with ED:
@@ -126,11 +127,16 @@ if submit:
                             vertical_spacing=0.4)
 
         for i, emotion in enumerate(top_emotions):
+            # Get the emotion category, color, and normalized score for the current emotion
             category = emotion['label']
             color = color_map[category]
             value = normalized_scores[i]
+            
+            # Calculate the row and column position for adding the trace to the subplots
             row = i // 2 + 1
             col = i % 2 + 1
+            
+            # Add a gauge chart trace for the current emotion category
             fig.add_trace(go.Indicator(
                 domain={'x': [0, 1], 'y': [0, 1]},
                 value=value,
@@ -148,9 +154,9 @@ if submit:
                                     'thickness': 0.5,
                                     'value': 50}}), row=row, col=col)
 
-
-        # Update layout
+        # Update the layout of the figure
         fig.update_layout(height=400, margin=dict(t=50, b=5, l=0, r=0))
+
 
         # Display gauge charts
         st.text("")
@@ -186,7 +192,7 @@ if submit:
         st.text("")
         st.subheader("Sexism Detection")
         st.text("")
-        label_SD = predicted_probabilities_SD[0]['label'].capitalize()
+        label_SD = predicted_probabilities_SD[0]['label'].title()
         st.image(f"assets/{label_SD}.jpg", width=200)
         st.text("")
         st.text("")
