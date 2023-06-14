@@ -86,10 +86,6 @@ default_options = [
 
 with st.sidebar:
 
-    # Add page description
-    description = "The GoEmotions Dashboard is a web-based user interface for analyzing emotions in text. The dashboard is powered by pre-trained natural language processing models that can detect emotions, identify hatespeech and sexist speech in text input. This dashboard is useful for anyone who wants to understand the emotional content of a text, including content creators, marketers, and researchers."
-    st.markdown(description)
-
     # Create dropdown with default options
     selected_option = st.selectbox("Select a default option or enter your own text:", default_options)
 
