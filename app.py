@@ -17,6 +17,12 @@ API_URL_SD = "https://api-inference.huggingface.co/models/NLP-LTU/bertweet-large
 
 headers = {"Authorization": f"Bearer {HF_API_KEY}"}
 
+def query(payload):
+    response_ED = requests.request("POST", API_URL_ED, headers=headers, json=payload)
+    response_HS = requests.request("POST", API_URL_HS, headers=headers, json=payload)
+    response_SD = requests.request("POST", API_URL_SD, headers=headers, json=payload)
+    return (json.loads(response_ED.content.decode("utf-8")),json.loads(response_HS.content.decode("utf-8")),json.loads(response_SD.content.decode("utf-8")))
+
 st.set_page_config(
     page_title="GoEmotions Dashboard",
     layout="wide"
@@ -24,12 +30,6 @@ st.set_page_config(
 
 # Set page title
 st.title("GoEmotions Dashboard - Analyzing Emotions in Text")
-
-def query(payload):
-    response_ED = requests.request("POST", API_URL_ED, headers=headers, json=payload)
-    response_HS = requests.request("POST", API_URL_HS, headers=headers, json=payload)
-    response_SD = requests.request("POST", API_URL_SD, headers=headers, json=payload)
-    return (json.loads(response_ED.content.decode("utf-8")),json.loads(response_HS.content.decode("utf-8")),json.loads(response_SD.content.decode("utf-8")))
 
 # Define color map for each emotion category
 color_map = {
@@ -87,8 +87,8 @@ default_options = [
 with st.sidebar:
 
     # Add page description
-    description = "The GoEmotions Dashboard is a web-based user interface for analyzing emotions in text. The dashboard is powered by a pre-trained natural language processing model that can detect emotions in text input. Users can input any text and the dashboard will display the detected emotions in a set of gauges, with each gauge representing the intensity of a specific emotion category. The gauge colors are based on a predefined color map for each emotion category. This dashboard is useful for anyone who wants to understand the emotional content of a text, including content creators, marketers, and researchers."
-    #st.markdown(description)
+    description = "The GoEmotions Dashboard is a web-based user interface for analyzing emotions in text. The dashboard is powered by pre-trained natural language processing models that can detect emotions, identify hatespeech and sexist speech in text input. This dashboard is useful for anyone who wants to understand the emotional content of a text, including content creators, marketers, and researchers."
+    st.markdown(description)
 
     # Create dropdown with default options
     selected_option = st.selectbox("Select a default option or enter your own text:", default_options)
@@ -117,11 +117,7 @@ if submit:
         top_emotions = predicted_probabilities_ED[:4]
         top_scores = [e['score'] for e in top_emotions]
 
-        # Normalize the scores so that they add up to 100%
-        total = sum(top_scores)
-        normalized_scores = [score/total * 100 for score in top_scores]
-
-        # Create the gauge charts for the top 4 emotion categories using the normalized scores
+        # Create the gauge charts for the top 4 emotion categories
         fig = make_subplots(rows=2, cols=2, specs=[[{'type': 'indicator'}, {'type': 'indicator'}],
                                                     [{'type': 'indicator'}, {'type': 'indicator'}]],
                             vertical_spacing=0.4)
@@ -130,7 +126,7 @@ if submit:
             # Get the emotion category, color, and normalized score for the current emotion
             category = emotion['label']
             color = color_map[category]
-            value = normalized_scores[i]
+            value = top_scores[i] * 100
             
             # Calculate the row and column position for adding the trace to the subplots
             row = i // 2 + 1
@@ -187,12 +183,12 @@ if submit:
         st.text("")
 
     with SD:
+        label_SD = predicted_probabilities_SD[0]['label'].title()
         st.text("")
         st.text("")
         st.text("")
         st.subheader("Sexism Detection")
         st.text("")
-        label_SD = predicted_probabilities_SD[0]['label'].title()
         st.image(f"assets/{label_SD}.jpg", width=200)
         st.text("")
         st.text("")
