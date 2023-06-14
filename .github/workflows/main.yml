@@ -18,4 +18,6 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://devanshsrivastav:$HF_TOKEN@huggingface.co/spaces/devanshsrivastav/GoEmotions main
+          HF_username: devanshsrivastav # your huggingface.co username here (check your profile page)
+          HF_space_name: GoEmotions  # name of the hub space to which you want to push the model
+        run: git push https://$HF_username:$HF_TOKEN@huggingface.co/spaces/$HF_username/HF_space_name main
