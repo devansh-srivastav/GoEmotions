@@ -33,7 +33,13 @@ GoEmotions/
 git clone https://github.com/devansh-srivastav/GoEmotions.git
 ```
 
-`Step 2` - Create and activate a new python virtual environment: (This step can be skipped if working on GitHub Codespaces!)
+`Step 2` - Navigate to the root directory of the project.
+
+```bash
+cd GoEmotions
+```
+
+`Step 3` - Create and activate a new python virtual environment: (This step can be skipped if working on GitHub Codespaces!)
 
 ```bash
 python -m venv venv
@@ -43,19 +49,13 @@ python -m venv venv
 venv\Scripts\activate
 ```
 
-`Step 3` - Install the required packages using pip: (This step can be skipped if working on GitHub Codespaces as it automatically installs the requirements!)
+`Step 4` - Install the required packages using pip: (This step can be skipped if working on GitHub Codespaces as it automatically installs the requirements!)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-`Step 4`- Create a free account on the [Hugging Face website](https://huggingface.co/) and generate an API key (read).
-
-`Step 5` - Navigate to the root directory of the project.
-
-```bash
-cd GoEmotions
-```
+`Step 5`- Create a free account on the [Hugging Face website](https://huggingface.co/) and generate an API key (read).
 
 `Step 6`
 
