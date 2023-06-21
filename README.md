@@ -45,8 +45,15 @@ cd GoEmotions
 python -m venv venv
 ```
 
+For Windows
 ```bash
 venv\Scripts\activate
+```
+
+For Linux/MacOS
+
+```bash
+source venv/bin/activate
 ```
 
 `Step 4` - Install the required packages using pip: (This step can be skipped if working on GitHub Codespaces as it automatically installs the requirements!)
